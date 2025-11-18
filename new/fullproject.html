@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>QuizMaster Pro</title>
+<style>
+  body {
+    font-family: 'Segoe UI', sans-serif;
+    margin:0;
+    padding:0;
+    scroll-behavior: smooth;
+    background: linear-gradient(135deg, #6a11cb, #2575fc);
+    color:#333;
+  }
+
+  /* Navbar */
+  .navbar {
+    position: sticky;
+    top:0;
+    background: rgba(0,0,0,0.8);
+    display:flex;
+    justify-content:center;
+    gap:25px;
+    padding:15px 0;
+    z-index:10;
+  }
+  .navbar a {
+    color:white;
+    text-decoration:none;
+    font-weight:bold;
+    cursor:pointer;
+    font-size:16px;
+  }
+  .navbar a:hover { color:#ffeb3b; }
+
+  /* Sections */
+  section {
+  padding: 80px 20px; /* More top and bottom space */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  min-height: 100vh; /* Make each section at least full viewport height */
+}
+
+.card {
+  background: #fff;
+  border-radius: 20px;
+  padding: 30px;
+  max-width: 600px;
+  width: 100%;
+  box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+  text-align: center;
+  z-index: 1;
+}
+
+/* Add spacing between sections */
+section + section {
+  margin-top: 50px;
+}
+#score .card {
+  background: #f9f9f9; /* Lighter than quiz background */
+  border: 2px solid #2575fc;
+}
+
+
+  h1,h2 { margin-bottom:15px; }
+  p, li { margin:5px 0; text-align:left; }
+
+  /* Quiz options */
+  .options { text-align:left; margin-top:10px; }
+  .options label {
+    display:block;
+    margin:10px 0;
+    padding:12px;
+    border:2px solid #ddd;
+    border-radius:10px;
+    cursor:pointer;
+    font-size:16px;
+  }
+  .options label:hover { background:#f1f1f1; border-color:#2575fc; }
+  .options input { margin-right:8px; }
+
+  button {
+    background: linear-gradient(135deg, #2575fc, #6a11cb);
+    color:white;
+    border:none;
+    padding:12px 20px;
+    border-radius:30px;
+    cursor:pointer;
+    margin-top:20px;
+    font-size:16px;
+  }
+
+  button:hover { background: linear-gradient(135deg, #6a11cb, #2575fc); }
+
+  footer {
+    background: rgba(0,0,0,0.8);
+    color:white;
+    text-align:center;
+    padding:15px 20px;
+  }
+
+  @media (max-width:600px){
+    .card { padding:20px; }
+    h1,h2{font-size:18px;}
+    .options label{font-size:14px;padding:10px;}
+    button{font-size:14px;padding:10px 15px;}
+  }
+</style>
+</head>
+<body>
+
+<!-- Navbar -->
+<div class="navbar">
+  <a href="#home">🏠 Home</a>
+  <a href="#instructions">📖 Instructions</a>
+  <a href="#quiz">📝 Quiz</a>
+  <a href="#score">📊 Score</a>
+</div>
+
+<!-- Home Section -->
+<section id="home">
+  <div class="card">
+    <h1>Welcome to QuizMaster Pro</h1>
+    <p>🎯 This is your ultimate platform to test JavaScript knowledge.</p>
+    <ul>
+      <li>✅ Learn JS concepts</li>
+      <li>✅ Practice quizzes</li>
+      <li>✅ Track your score</li>
+    </ul>
+    <button onclick="scrollToSection('instructions')">View Instructions</button>
+  </div>
+</section>
+
+<!-- Instructions Section -->
+<section id="instructions">
+  <div class="card">
+    <h2>Instructions</h2>
+    <ul>
+      <li>Click Start Quiz to begin.</li>
+      <li>Select the correct answer for each question.</li>
+      <li>Your score will update live.</li>
+    </ul>
+    <button onclick="scrollToSection('quiz')">Start Quiz</button>
+  </div>
+</section>
+
+<!-- Quiz Section -->
+<section id="quiz">
+  <div class="card">
+    <h2 id="question">Question will appear here</h2>
+    <div class="options" id="options"></div>
+    <button id="submit">Submit Answer</button>
+    <div id="result"></div>
+  </div>
+</section>
+
+<!-- Score Section -->
+<section id="score">
+  <div class="card">
+    <h2>Your Score</h2>
+    <p id="liveScore" style="font-size:22px;"></p>
+  </div>
+</section>
+
+<!-- Footer -->
+<footer>
+  &copy; 2025 QuizMaster Pro | Responsive Web App
+</footer>
+
+<script>
+  const quizData = [
+    { question: "1. Which company developed JavaScript?", options: ["Microsoft", "Netscape", "Google", "IBM"], answer: "Netscape" },
+    { question: "2. Which keyword is used to declare a variable?", options: ["var","int","string","declare"], answer: "var" },
+    { question: "3. Symbol for comments?", options:["//","<!-- -->","#","/* */"], answer:"//" },
+    { question: "4. JSON to object method?", options:["JSON.parse()","JSON.stringify()","toObject()","parse.JSON()"], answer:"JSON.parse()" },
+    { question: "5. NOT JS data type?", options:["Number","String","Boolean","Character"], answer:"Character" }
+  ];
+
+  let currentQuestion=0, score=0;
+  const questionEl=document.getElementById("question");
+  const optionsEl=document.getElementById("options");
+  const submitBtn=document.getElementById("submit");
+  const liveScore=document.getElementById("liveScore");
+
+  function loadQuestion(){
+    const q=quizData[currentQuestion];
+    questionEl.innerText=q.question;
+    optionsEl.innerHTML='';
+    q.options.forEach(opt=>{
+      optionsEl.innerHTML+=`<label><input type="radio" name="answer" value="${opt}"> ${opt}</label>`;
+    });
+  }
+
+  submitBtn.addEventListener('click', () => {
+  const selected = document.querySelector('input[name="answer"]:checked');
+  if (!selected) { 
+    alert('⚠️ Please select an answer!'); 
+    return;
+  }
+
+  if (selected.value === quizData[currentQuestion].answer) score++;
+  currentQuestion++;
+
+  if (currentQuestion < quizData.length) {
+    loadQuestion();
+  } else {
+    // Show final score only after finishing all questions
+    optionsEl.innerHTML = `<div class="final-score">🎉 Final Score: ${score} / ${quizData.length}</div>
+      <button onclick="restartQuiz()">🔄 Play Again</button>`;
+    liveScore.innerText = `Score: ${score} / ${quizData.length}`;
+    scrollToSection('score'); // Move scroll here
+  }
+});
+
+
+  function restartQuiz(){
+    currentQuestion=0; score=0;
+    loadQuestion();
+    liveScore.innerText=`Score: ${score} / ${quizData.length}`;
+    scrollToSection('quiz');
+  }
+
+  function scrollToSection(id){
+  const element = document.getElementById(id);
+  const yOffset = -70; // offset for sticky navbar
+  const y = element.getBoundingClientRect().top + window.pageYOffset + yOffset;
+  window.scrollTo({top: y, behavior: 'smooth'});
+}
+
+
+  // Initial load
+  loadQuestion();
+</script>
+
+</body>
+</html>
